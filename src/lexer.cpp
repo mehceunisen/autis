@@ -85,7 +85,6 @@ Lexeme Lexer::get_lexeme() {
 
         return lexeme_lookup_table.at(word);
     }
-
     else if (ch == '(') {
         word += advance();
         return lexeme_lookup_table.at(word);
@@ -115,6 +114,10 @@ Lexeme Lexer::get_lexeme() {
         advance();
         return Lexeme(StringLiteral, word);
     }
+    else if (last_idx_ == source_.length()) {
+        return Lexeme(EndOfFile, "");
+    }
+
     return Lexeme(Undefined, "");
 }
 

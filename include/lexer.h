@@ -49,7 +49,7 @@ enum Token {
 
 
 struct Lexeme {
-    Token t {Undefined};
+    Token token {Undefined};
     std::string raw_val {""};
 };
 
@@ -90,6 +90,7 @@ public:
     Lexer(std::string file_path);
      
     Lexeme get_lexeme();
+
     const uint32_t get_current_line() const;
 private:
     char advance();
