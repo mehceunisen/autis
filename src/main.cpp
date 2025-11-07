@@ -6,7 +6,7 @@
 int main() {
     Lexer l("file.ats");
     Parser p(l);
-
-    p.parse();
+    auto res = static_cast<ExpressionAST*>(p.parse()); 
     return 0;
 }
+

@@ -101,6 +101,14 @@ Lexeme Lexer::get_lexeme() {
         word += advance();
         return lexeme_lookup_table.at(word);
     }
+    else if (ch == ':') {
+        word += advance();
+        return lexeme_lookup_table.at(word);
+    }
+    else if (ch == ',') {
+        word += advance();
+        return lexeme_lookup_table.at(word);
+    }
     else if (ch == '\n') {
         word += advance();
         current_line_++;

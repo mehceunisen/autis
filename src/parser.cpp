@@ -1,5 +1,7 @@
 #include "parser.h"
+#include "expression_ast.h"
 #include "lexer.h"
+
 
 #include <iostream>
 
@@ -15,46 +17,52 @@ Parser::Parser(Lexer& lexer) : lexer_(lexer) {
     }
 }
 
-Lexeme Parser::push_lexeme(Lexeme lxm) {
+Lexeme Parser::advance_lexeme() {
+    Lexeme lxm = lexer_.get_lexeme();
+
     Lexeme tmp = current_lxm_;
     current_lxm_ = next_lxm_;
     next_lxm_ = lxm;
+
     return tmp;
 }
 
-void Parser::parse() {
-    auto st = parse_statement();
-    std::cout << dynamic_cast<StatementAST*>(st.get())->val; 
-
-    if (current_lxm_.token == OpAdd) {
-                
-        auto exp = parse_expression(std::move(st));
-    
-    }
+ASTNode* Parser::parse() {
+    //ASTNode* primary = parse_literal();
+    //
+    //if (operator_set.contains(current_lxm_.token)) {
+    //    return parse_operator(primary);
+    //}
+    //else {
+    //    return primary;
+    //}
 }
 
-std::unique_ptr<ASTNode> Parser::parse_statement() {
-    if (current_lxm_.token == IntLiteral) {
-        Lexeme ret = push_lexeme(lexer_.get_lexeme());
-        std::cout << "raw val" << ret.raw_val << "\n";
-        return std::make_unique<StatementAST>(
-                std::stoi(ret.raw_val));
-    }
-    else {
-        return nullptr;
-    }
+// this could be imporved with 
+// a design pattern
+ExpressionAST* Parser::parse_literal() { 
+   // if (current_lxm_.token == IntLiteral) {
+   //     Lexeme ret = advance_lexeme(); // eat int literal
+   //     return new IntASTNode(std::stol(ret.raw_val));
+   // }
+   // else if (current_lxm_.token == FloatLiteral) {
+   //     Lexeme ret = advance_lexeme(); // eat float literal
+   //     return new FloatASTNode(std::stof(ret.raw_val));
+   // }
+   // else if (current_lxm_.token == StringLiteral) {
+   //     Lexeme ret = advance_lexeme();
+   //     return new StringASTNode(ret.raw_val);
+   // }
+   // else {
+   //     return nullptr;
+   // }
 }
 
-std::unique_ptr<ASTNode> 
-Parser::parse_expression(std::unique_ptr<ASTNode> lhs) {
-    if (current_lxm_.token == OpAdd) {
-        std::cout << "i came in\n";
-        Lexeme ret = push_lexeme(lexer_.get_lexeme()); // ate  +
-        auto _rhs = parse_statement();
-        if (_rhs) {
-            _rhs = std::move(parse_expression(std::move(_rhs))); 
-        }
-        std::cout << dynamic_cast<StatementAST*>(lhs.get())->val + dynamic_cast<StatementAST*>(_rhs.get())->val;
-    }
-    return nullptr;
+ExpressionAST* Parser::parse_operator(ASTNode* lhs) {
+    //Lexeme op_lexm = advance_lexeme(); // consume + operator
+    //ASTNode* rhs = parse();
+    //if (rhs == nullptr) {
+    //    return new OperatorASTNode(op_lexm.token, lhs, nullptr);
+    //}
+    //return new OperatorASTNode(op_lexm.token, lhs, rhs);
 }

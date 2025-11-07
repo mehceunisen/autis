@@ -6,53 +6,30 @@
 #include <sstream>
 #include <unordered_map>
 
-enum Token {
-    Undefined = -1,
-    Identifier, // str ''x'
-    CtrlIf, // if () {}
-    CtrlElse, // else {}
-    CtrlElseIf, // elseif () {}
-    CtrlWhile, // while()
-    CtrlFor, // for()
-    FuncDef, // fn
-    FuncRet, // ret
-    ParanOpen, // (
-    ParanClose, // )
-    CurBraceOpen, // {
-    CurBraceClose, // }
-    OpAdd, // +
-    OpSub, // -
-    OpDiv, // /
-    OpMul, // *
-    OpAssign, // =
-    OpInc, // ++
-    OpDec, // --
-    OpEqCheck, // ==
-    OpNEqCheck, // !=
-    OpGreater, // >
-    OpLess, // <
-    OpGreaterOrEq, // =>
-    OpLessOrEq, // =<
-    TypeInt32, // int
-    TypeUInt32, // u32
-    TypeFloat32, // float
-    TypeString, // str
-    IntLiteral, // 10
-    FloatLiteral, // 10.2
-    StringLiteral, // "test"
-    //Colon, // :
-    //Comma, // ,
-    //Dot, // .
-    EndOfLine, // \n
-    EndOfFile, // EOF
-};
-
+#include "token.h"
 
 struct Lexeme {
     Token token {Undefined};
     std::string raw_val {""};
 };
 
+class Lexer {
+public:
+    Lexer(std::string file_path);
+     
+    Lexeme get_lexeme();
+
+    const uint32_t get_current_line() const;
+private:
+    char advance();
+    char peek();
+    char peek_next();
+
+    uint64_t last_idx_ {0};
+    uint32_t current_line_{0};
+
+    std::string source_;
+};
 
 static std::unordered_map<std::string, Lexeme> lexeme_lookup_table {
     {"if", Lexeme(CtrlIf, "if")},
@@ -82,25 +59,9 @@ static std::unordered_map<std::string, Lexeme> lexeme_lookup_table {
     {")", Lexeme(ParanClose, ")")},
     {"{", Lexeme(CurBraceOpen, "{")},
     {"}", Lexeme(CurBraceClose, "}")},
-
+    {":", Lexeme(Colon, ":")},
+    {",", Lexeme(Comma, ",")},
 };
 
-class Lexer {
-public:
-    Lexer(std::string file_path);
-     
-    Lexeme get_lexeme();
-
-    const uint32_t get_current_line() const;
-private:
-    char advance();
-    char peek();
-    char peek_next();
-
-    uint64_t last_idx_ {0};
-    uint32_t current_line_{0};
-
-    std::string source_;
-};
 
 #endif
