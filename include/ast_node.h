@@ -15,5 +15,4 @@ class ExpressionAST : public ASTNode {};
 
 class StatementAST : public ASTNode {};
 
-
 #endif

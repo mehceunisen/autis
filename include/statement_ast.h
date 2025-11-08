@@ -2,7 +2,7 @@
 #define STATEMENT_AST_H
 
 #include "ast_node.h"
-#include "expression_ast.h"
+//#include "expression_ast.h"
 #include "token.h"
 
 class VariableDeclarationASTNode : public StatementAST {

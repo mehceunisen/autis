@@ -50,4 +50,12 @@ static std::set<Token> operator_set {
         OpLessOrEq
 };
 
+static std::set<Token> literal_set {
+    IntLiteral, FloatLiteral, StringLiteral,
+};
+
+static std::set<Token> type_set {
+    TypeInt32, TypeUInt32, TypeFloat32, TypeString,
+};
+
 #endif 
