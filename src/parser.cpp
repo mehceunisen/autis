@@ -2,9 +2,11 @@
 #include "lexer.h"
 #include "expression_ast.h"
 #include "statement_ast.h"
+#include "token.h"
 
 
 #include <iostream>
+#include <iterator>
 
 Parser::Parser(Lexer& lexer) : lexer_(lexer) {
     current_lxm_ = lexer_.get_lexeme();
@@ -28,11 +30,12 @@ Lexeme Parser::advance_lexeme() {
     return tmp;
 }
 
-ASTNode* Parser::parse() {
+ASTNode* Parser::parse() { 
+    // assignment, binary and unary operation, fn decl, fn call
+    
     // we will act according to type of current_lxm_
-    if (type_set.contains(current_lxm_.token)) {
-            ASTNode* primary = parse_literal();
-            Lexeme type = advance_lexeme(); // eat primary
+    if (type_set.contains(current_lxm_.token)) { // this is an assignment
+            Lexeme type = advance_lexeme(); // eat Type
             if (current_lxm_.token != Token::Identifier)
                 throw std::runtime_error(
                 std::format("expected identifier at line {}", 
@@ -42,26 +45,48 @@ ASTNode* Parser::parse() {
                 throw std::runtime_error(
                 std::format("expected assignment at line {}", 
                     lexer_.get_current_line())); 
-            Lexeme op = advance_lexeme(); // eat equal sign
-            ExpressionAST* val = parse_literal(); 
-            // TODO:need to check is val and primary are same type
-            if (!val)
+            advance_lexeme(); // eat equal sign
+                              
+            ExpressionAST* binary_op = parse_binary_op(); 
+            if (binary_op == nullptr)
                 throw std::runtime_error(
                 std::format("expected literal at line {}", 
                     lexer_.get_current_line()));
-            // whole assignment has been parsed. gotta check whether 
-            // that's the end of line
-            Lexeme eol = advance_lexeme();
-            if (eol.token != Token::EndOfLine) 
-                throw std::runtime_error(std::format
-                        ("no expression expected at the end of line {}", 
-                    lexer_.get_current_line()));
-
-            return new AssignmentASTNode(identifier.raw_val, val);
+            //Lexeme eol = advance_lexeme();
+            //if (eol.token != Token::EndOfLine) 
+            //    throw std::runtime_error(std::format
+            //            ("no expression expected at the end of line {}", 
+            //        lexer_.get_current_line()));
+            return new AssignmentASTNode(identifier.raw_val, binary_op);
     }
 }
 
-// this could be imporved with 
+ExpressionAST* Parser::parse_primary() {
+    if (literal_set.contains(current_lxm_.token)) {
+        return parse_literal(); // function will eat token
+    }
+    else if (current_lxm_.token == Token::Identifier) {
+        // eat token
+        return new IdentifierASTNode(advance_lexeme().raw_val);
+    }
+}
+
+ExpressionAST* Parser::parse_binary_op() {
+    ExpressionAST* lhs = parse_primary();
+    Lexeme op = advance_lexeme();
+    if (op.token == Token::EndOfLine) {
+        return lhs;
+    }
+    if (!operator_set.contains(op.token)) {
+        throw std::runtime_error(
+                std::format("expected binary operator at line {}",
+                    lexer_.get_current_line())); 
+    }
+    return new BinaryOpASTNode(op.token, lhs,
+            parse_binary_op());
+}
+
+// this could be improved with 
 // a design pattern
 ExpressionAST* Parser::parse_literal() { 
     if (current_lxm_.token == IntLiteral) {
@@ -81,11 +106,3 @@ ExpressionAST* Parser::parse_literal() {
     }
 }
 
-ExpressionAST* Parser::parse_operator(ASTNode* lhs) {
-    //Lexeme op_lexm = advance_lexeme(); // consume + operator
-    //ASTNode* rhs = parse();
-    //if (rhs == nullptr) {
-    //    return new OperatorASTNode(op_lexm.token, lhs, nullptr);
-    //}
-    //return new OperatorASTNode(op_lexm.token, lhs, rhs);
-}

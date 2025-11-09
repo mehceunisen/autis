@@ -14,9 +14,11 @@ public:
     ASTNode* parse();
 
 private:
+    ExpressionAST* parse_primary();
+
     ExpressionAST* parse_literal(); 
     ExpressionAST* parse_type();
-    ExpressionAST* parse_operator(ASTNode* lhs);
+    ExpressionAST* parse_binary_op();
 
     StatementAST* parse_control();
     StatementAST* parse_func();

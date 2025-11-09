@@ -37,9 +37,9 @@ private:
     std::string val;
 };
 
-class OperatorASTNode : public ExpressionAST {
+class BinaryOpASTNode : public ExpressionAST {
 public:
-    OperatorASTNode(Token _op_token, ASTNode* _lhs, ASTNode* _rhs) 
+    BinaryOpASTNode(Token _op_token, ASTNode* _lhs, ASTNode* _rhs) 
         : op_token(_op_token), lhs(_lhs), rhs(_rhs) {}
 private: 
     Token op_token;

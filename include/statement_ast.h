@@ -1,8 +1,9 @@
 #ifndef STATEMENT_AST_H
 #define STATEMENT_AST_H
 
+#include <vector>
+
 #include "ast_node.h"
-//#include "expression_ast.h"
 #include "token.h"
 
 class VariableDeclarationASTNode : public StatementAST {

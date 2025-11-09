@@ -2,6 +2,7 @@
 #define TOKEN_H
 
 #include <set>
+#include <unordered_map>
 
 enum Token {
     Undefined = -1,
@@ -30,17 +31,23 @@ enum Token {
     OpLess, // <
     OpGreaterOrEq, // =>
     OpLessOrEq, // =<
-    TypeInt32, // int
+    TypeInt32, // i32
     TypeUInt32, // u32
     TypeFloat32, // float
     TypeString, // str
     IntLiteral, // 10
+    UIntLiteral, // x >= 0
     FloatLiteral, // 10.2
     StringLiteral, // "test"
     Colon, // :
     Comma, // ,
     EndOfLine, // \n
     EndOfFile, // EOF
+};
+
+static std::unordered_map<Token, Token> type_to_literal {
+    {TypeInt32, IntLiteral}, {TypeUInt32, UIntLiteral}, 
+    {TypeFloat32, FloatLiteral}, {TypeString, StringLiteral},
 };
 
 static std::set<Token> operator_set {
