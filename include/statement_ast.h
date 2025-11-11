@@ -9,68 +9,68 @@
 class VariableDeclarationASTNode : public StatementAST {
 public:
     VariableDeclarationASTNode(std::string _name, Token _token, 
-            ExpressionAST* _init=nullptr) 
-        : name(std::move(_name)), token(_token), init(_init){}
+            std::unique_ptr<ExpressionAST> _init=nullptr) 
+        : name(std::move(_name)), token(_token), init(std::move(_init)){}
 private:
     std::string name;
     Token token;
-    ExpressionAST* init;
+    std::unique_ptr<ExpressionAST> init;
 };
 
 class AssignmentASTNode : public StatementAST {
 public:
-    AssignmentASTNode(std::string _name, ExpressionAST* _value) 
-        : name(std::move(_name)), value(_value) {}
+    AssignmentASTNode(std::string _name, std::unique_ptr<ExpressionAST> _value) 
+        : name(std::move(_name)), value(std::move(_value)) {}
 private:
     std::string name;
-    ExpressionAST* value;
+    std::unique_ptr<ExpressionAST> value;
 };
 
 class IfStatementASTNode : public StatementAST {
 public:
-    IfStatementASTNode(ExpressionAST* _cond, 
-                       std::vector<StatementAST*> _then_block, 
-                       std::vector<StatementAST*> _else_block) 
-        : cond(_cond), then_block(std::move(_then_block)),
+    IfStatementASTNode(std::unique_ptr<ExpressionAST> _cond, 
+                       std::vector<std::unique_ptr<StatementAST>> _then_block, 
+                       std::vector<std::unique_ptr<StatementAST>> _else_block) 
+        : cond(std::move(_cond)), then_block(std::move(_then_block)),
         else_block(std::move(_else_block)) {}
 private:
-    ExpressionAST* cond;
-    std::vector<StatementAST*> then_block; 
-    std::vector<StatementAST*> else_block;
+    std::unique_ptr<ExpressionAST> cond;
+    std::vector<std::unique_ptr<StatementAST>> then_block; 
+    std::vector<std::unique_ptr<StatementAST>> else_block;
 };
 
 class WhileStatementASTNode : public StatementAST {
 public:
-    WhileStatementASTNode(ExpressionAST* cond,
-                      std::vector<StatementAST*> b)
+    WhileStatementASTNode(std::unique_ptr<ExpressionAST> cond,
+                      std::vector<std::unique_ptr<StatementAST>> b)
         : condition(std::move(cond)), body(std::move(b)) {}
 private:
-    ExpressionAST* condition;
-    std::vector<StatementAST*> body;
+    std::unique_ptr<ExpressionAST> condition;
+    std::vector<std::unique_ptr<StatementAST>> body;
 };
 
 class ForStatementASTNode : public StatementAST {
 public:
- ForStatementASTNode(StatementAST* initStmt, ExpressionAST* condExpr,
-                    ExpressionAST* incrExpr, 
-                    std::vector<StatementAST*> loopBody)
-        : init(initStmt),
-          condition(condExpr),
-          increment(incrExpr),
+ ForStatementASTNode(std::unique_ptr<StatementAST> initStmt, std::unique_ptr<ExpressionAST> condExpr,
+                    std::unique_ptr<ExpressionAST> incrExpr, 
+                    std::vector<std::unique_ptr<StatementAST>> loopBody)
+        : init(std::move(initStmt)),
+          condition(std::move(condExpr)),
+          increment(std::move(incrExpr)),
           body(std::move(loopBody)) {}
 private:
-    StatementAST* init;      // e.g., int i = 0
-    ExpressionAST* condition; // e.g., i < 10
-    ExpressionAST* increment; // e.g., i++
-    std::vector<StatementAST*> body;
+    std::unique_ptr<StatementAST> init;      // e.g., int i = 0
+    std::unique_ptr<ExpressionAST> condition; // e.g., i < 10
+    std::unique_ptr<ExpressionAST> increment; // e.g., i++
+    std::vector<std::unique_ptr<StatementAST>> body;
 };
 
 class ReturnStatementASTNode : public StatementAST {
 public:
-    ReturnStatementASTNode(ExpressionAST* val = nullptr)
+    ReturnStatementASTNode(std::unique_ptr<ExpressionAST> val = nullptr)
         : returnValue(std::move(val)) {}
 private:
-    ExpressionAST* returnValue;  // optional (for void returns)
+    std::unique_ptr<ExpressionAST> returnValue;  // optional (for void returns)
 
 };
 
@@ -82,15 +82,16 @@ private:
     };
 public:
     FunctionDefASTNode(std::string funcName, std::vector<Parameter> params,
-                        Token retType, std::vector<StatementAST*> funcBody)
+                        Token retType, std::vector<std::unique_ptr<StatementAST>> funcBody)
         : name(funcName), parameters(params), returnType(retType),
-        body(funcBody) {}
+        body(std::move(funcBody)) {}
 private:
 
     std::string name;
     std::vector<Parameter> parameters;
     Token returnType;  // or separate enum
-    std::vector<StatementAST*> body;
+    std::vector<std::unique_ptr<StatementAST>> body;
 };
 
 #endif
+

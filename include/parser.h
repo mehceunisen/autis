@@ -11,18 +11,18 @@ class Parser {
 public:
     Parser(Lexer& lexer);
 
-    ASTNode* parse();
+    std::unique_ptr<ASTNode> parse();
 
 private:
-    ASTNode* parse_primary();
+    std::unique_ptr<ASTNode> parse_primary();
 
-    ExpressionAST* parse_literal(); 
-    ExpressionAST* parse_type();
-    ExpressionAST* parse_binary_op();
-    ExpressionAST* parse_binary_op_rhs(int exper_prec, ExpressionAST* lhs);
+    std::unique_ptr<ExpressionAST> parse_literal(); 
+    std::unique_ptr<ExpressionAST> parse_type();
+    std::unique_ptr<ExpressionAST> parse_binary_op();
+    std::unique_ptr<ExpressionAST> parse_binary_op_rhs(int exper_prec, std::unique_ptr<ExpressionAST> lhs);
 
-    StatementAST* parse_control();
-    StatementAST* parse_function_def();
+    std::unique_ptr<StatementAST> parse_control();
+    std::unique_ptr<StatementAST> parse_function_def();
 
     Lexeme advance_lexeme();
 

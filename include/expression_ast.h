@@ -39,25 +39,26 @@ private:
 
 class BinaryOpASTNode : public ExpressionAST {
 public:
-    BinaryOpASTNode(Token _op_token, ASTNode* _lhs, ASTNode* _rhs) 
-        : op_token(_op_token), lhs(_lhs), rhs(_rhs) {}
+    BinaryOpASTNode(Token _op_token, std::unique_ptr<ASTNode> _lhs, std::unique_ptr<ASTNode> _rhs) 
+        : op_token(_op_token), lhs(std::move(_lhs)), rhs(std::move(_rhs)) {}
 private: 
     Token op_token;
-    ASTNode *lhs, *rhs;
+    std::unique_ptr<ASTNode> lhs, rhs;
 };
 
 class UnaryOpASTNode : public ExpressionAST {
 public:
-    UnaryOpASTNode(Token _op_token, ExpressionAST* _operand) 
-        : op_token(_op_token), operand(_operand) {}
+    UnaryOpASTNode(Token _op_token, std::unique_ptr<ExpressionAST> _operand) 
+        : op_token(_op_token), operand(std::move(_operand)) {}
 private:
     Token op_token;
-    ExpressionAST* operand;
+    std::unique_ptr<ExpressionAST> operand;
 };
 
 class FuncCallASTNode : public ExpressionAST {
 public:
-    FuncCallASTNode(std::string _name, std::vector<ExpressionAST*> _arguments)      : name(_name), arguments(_arguments) {}
+    FuncCallASTNode(std::string _name, std::vector<ExpressionAST*> _arguments) 
+        : name(_name), arguments(_arguments) {}
 private:
     std::string name;
     std::vector<ExpressionAST*> arguments;
