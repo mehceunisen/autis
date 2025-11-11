@@ -7,7 +7,6 @@
 #include "ast_util.h"
 
 #include <iostream>
-#include <iterator>
 #include <stdexcept>
 #include <memory>
 
@@ -79,7 +78,7 @@ std::unique_ptr<ExpressionAST> Parser::parse_binary_op_rhs(int exper_prec, std::
         Lexeme op = advance_lexeme(); // eat current op
         std::unique_ptr<ExpressionAST> rhs = unique_ptr_cast<ExpressionAST>(parse_primary());
         if (binop_precedence[current_lxm_.token] > binop_precedence[op.token]) {
-            rhs = parse_binary_op_rhs(binop_precedence[current_lxm_.token], std::move(rhs));
+            rhs = parse_binary_op_rhs(binop_precedence[op.token] + 1, std::move(rhs));
         }
         lhs = std::make_unique<BinaryOpASTNode>(op.token, std::move(lhs), std::move(rhs));
     } 

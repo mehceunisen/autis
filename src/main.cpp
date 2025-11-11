@@ -10,6 +10,7 @@ int main() {
     Parser p(l);
     for (int i = 0; i < 10; ++i) {
         auto res = unique_ptr_cast<AssignmentASTNode>(p.parse());
+        std::cout << "of\n";
     }
     return 0;
 }
