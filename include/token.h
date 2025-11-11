@@ -65,4 +65,11 @@ static std::set<Token> type_set {
     TypeInt32, TypeUInt32, TypeFloat32, TypeString,
 };
 
+static std::unordered_map<Token, int> binop_precedence {
+    {OpLess, 10}, {OpGreater, 10}, {OpAdd, 20},
+    {OpSub, 20}, {OpMul, 40}, {OpDiv, 50},
+    {ParanOpen, 60}
+    
+};
+
 #endif 

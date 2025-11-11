@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "ast_node.h"
 #include "lexer.h"
 #include "expression_ast.h"
 #include "statement_ast.h"
@@ -7,6 +8,7 @@
 
 #include <iostream>
 #include <iterator>
+#include <stdexcept>
 
 Parser::Parser(Lexer& lexer) : lexer_(lexer) {
     current_lxm_ = lexer_.get_lexeme();
@@ -52,16 +54,38 @@ ASTNode* Parser::parse() {
                 throw std::runtime_error(
                 std::format("expected literal at line {}", 
                     lexer_.get_current_line()));
-            //Lexeme eol = advance_lexeme();
-            //if (eol.token != Token::EndOfLine) 
-            //    throw std::runtime_error(std::format
-            //            ("no expression expected at the end of line {}", 
-            //        lexer_.get_current_line()));
-            return new AssignmentASTNode(identifier.raw_val, binary_op);
+
+            return new AssignmentASTNode
+                (identifier.raw_val, binary_op);
     }
 }
 
-ExpressionAST* Parser::parse_primary() {
+
+ExpressionAST* Parser::parse_binary_op() {
+    ExpressionAST* lhs = static_cast<ExpressionAST*>(parse_primary());
+    return parse_binary_op_rhs(0, lhs);
+
+}
+
+ExpressionAST* Parser::parse_binary_op_rhs(int exper_prec, ExpressionAST* lhs) {
+    while (true) {
+        if(!operator_set.contains(current_lxm_.token) ||
+                binop_precedence.at(current_lxm_.token) < exper_prec) {
+            return lhs;
+        }
+        
+        Lexeme op = advance_lexeme(); // eat current op
+        ExpressionAST* rhs = static_cast<ExpressionAST*>(parse_primary());
+        std::cout << current_lxm_.raw_val << "\n";
+        if (binop_precedence[current_lxm_.token] > binop_precedence[op.token]) {
+            rhs = parse_binary_op_rhs(binop_precedence[current_lxm_.token], rhs);
+        }
+        lhs = new BinaryOpASTNode(op.token, lhs, rhs);
+    } 
+}
+
+
+ASTNode* Parser::parse_primary() {
     if (literal_set.contains(current_lxm_.token)) {
         return parse_literal(); // function will eat token
     }
@@ -69,21 +93,6 @@ ExpressionAST* Parser::parse_primary() {
         // eat token
         return new IdentifierASTNode(advance_lexeme().raw_val);
     }
-}
-
-ExpressionAST* Parser::parse_binary_op() {
-    ExpressionAST* lhs = parse_primary();
-    Lexeme op = advance_lexeme();
-    if (op.token == Token::EndOfLine) {
-        return lhs;
-    }
-    if (!operator_set.contains(op.token)) {
-        throw std::runtime_error(
-                std::format("expected binary operator at line {}",
-                    lexer_.get_current_line())); 
-    }
-    return new BinaryOpASTNode(op.token, lhs,
-            parse_binary_op());
 }
 
 // this could be improved with 

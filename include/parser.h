@@ -14,14 +14,15 @@ public:
     ASTNode* parse();
 
 private:
-    ExpressionAST* parse_primary();
+    ASTNode* parse_primary();
 
     ExpressionAST* parse_literal(); 
     ExpressionAST* parse_type();
     ExpressionAST* parse_binary_op();
+    ExpressionAST* parse_binary_op_rhs(int exper_prec, ExpressionAST* lhs);
 
     StatementAST* parse_control();
-    StatementAST* parse_func();
+    StatementAST* parse_function_def();
 
     Lexeme advance_lexeme();
 
