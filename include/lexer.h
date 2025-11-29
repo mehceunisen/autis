@@ -42,6 +42,7 @@ static std::unordered_map<std::string, Lexeme> lexeme_lookup_table {
     {"i32", Lexeme(TypeInt32, "i32")},
     {"u32", Lexeme(TypeUInt32, "u32")},
     {"f32", Lexeme(TypeFloat32, "f32")},
+    {"str", Lexeme(TypeString, "str")},
     {"+", Lexeme(OpAdd, "+")},
     {"-", Lexeme(OpSub, "-")},
     {"/", Lexeme(OpDiv, "/")},

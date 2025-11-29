@@ -75,12 +75,12 @@ private:
 };
 
 class FunctionDefASTNode : public StatementAST {
-private:
+public:
     struct Parameter {
         Token type;
         std::string name;
     };
-public:
+
     FunctionDefASTNode(std::string funcName, std::vector<Parameter> params,
                         Token retType, std::vector<std::unique_ptr<StatementAST>> funcBody)
         : name(funcName), parameters(params), returnType(retType),

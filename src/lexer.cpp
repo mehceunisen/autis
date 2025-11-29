@@ -84,8 +84,7 @@ Lexeme Lexer::get_lexeme() {
             word += advance();
 
         return lexeme_lookup_table.at(word);
-    }
-    else if (ch == '(') {
+    } else if (ch == '(') {
         word += advance();
         return lexeme_lookup_table.at(word);
     }

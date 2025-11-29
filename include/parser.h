@@ -27,7 +27,6 @@ private:
     Lexeme advance_lexeme();
 
     Lexeme current_lxm_;
-    Lexeme next_lxm_;
 
     Lexer& lexer_;
 };
