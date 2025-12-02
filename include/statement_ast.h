@@ -8,12 +8,12 @@
 
 class VariableDeclarationASTNode : public StatementAST {
 public:
-    VariableDeclarationASTNode(std::string _name, Token _token, 
+    VariableDeclarationASTNode(std::string _name, 
             std::unique_ptr<ExpressionAST> _init=nullptr) 
-        : name(std::move(_name)), token(_token), init(std::move(_init)){}
+        : name(std::move(_name)), init(std::move(_init)){}
 private:
     std::string name;
-    Token token;
+    //Token token;  i don't know why i've added this, actually claude added
     std::unique_ptr<ExpressionAST> init;
 };
 

@@ -29,35 +29,74 @@ Lexeme Parser::advance_lexeme() {
 
 std::unique_ptr<ASTNode> Parser::parse() { 
     // assignment, binary and unary operation, fn decl, fn call
-    
     // we will act according to type of current_lxm_
-    if (type_set.contains(current_lxm_.token)) { // this is an assignment
-            advance_lexeme(); // eat Type
-            if (current_lxm_.token != Token::Identifier)
-                throw std::runtime_error(
-                std::format("expected identifier at line {}", 
-                    lexer_.get_current_line())); 
-            Lexeme identifier = advance_lexeme();
-            if (current_lxm_.token != Token::OpAssign)
-                throw std::runtime_error(
-                std::format("expected assignment at line {}", 
-                    lexer_.get_current_line())); 
+    if (type_set.contains(current_lxm_.token)) { // this is var decl 
+        advance_lexeme(); // eat Type
+        if (current_lxm_.token != Token::Identifier)
+            throw std::runtime_error(
+                    std::format("expected identifier at line {}", 
+                        lexer_.get_current_line())); 
+        Lexeme identifier = advance_lexeme();
+        
+
+        std::unique_ptr<ExpressionAST> binary_op {nullptr};
+        if (current_lxm_.token == Token::OpAssign) { // we have a rhs
             advance_lexeme(); // eat equal sign
-                              
-            std::unique_ptr<ExpressionAST> binary_op = parse_binary_op(); 
+            if (current_lxm_.token == Token::FuncCall) {
+                return parse_function_call();
+            }
+            binary_op = parse_binary_op(); 
             if (binary_op == nullptr)
                 throw std::runtime_error(
-                std::format("expected literal at line {}", 
-                    lexer_.get_current_line()));
-            
-            return std::make_unique<AssignmentASTNode>(identifier.raw_val, std::move(binary_op));
+                        std::format("expected literal at line {}", 
+                            lexer_.get_current_line()));
+        }
+        advance_lexeme(); // eat end of line
+        return std::make_unique<VariableDeclarationASTNode>
+            (identifier.raw_val, std::move(binary_op));
+    }
+
+    else if (current_lxm_.token == Token::Identifier) { //unary, asgn, fncall
+        Lexeme identifier = advance_lexeme(); // eat identifier token
+        if (current_lxm_.token == OpInc || current_lxm_.token == OpDec) {
+            // TODO: add prefix unary
+            Lexeme operand = advance_lexeme(); // eat operator 
+            if (current_lxm_.token != Token::EndOfLine) {
+                throw std::runtime_error(
+                        std::format("expected end of line at line {}", 
+                            lexer_.get_current_line()));
+            }
+            advance_lexeme(); // eat end of line
+            return std::make_unique<UnaryOpASTNode>
+                (operand.token,
+                 std::make_unique<IdentifierASTNode>(identifier.raw_val));
+        }
+        else if (current_lxm_.token == Token::OpAssign) {
+            advance_lexeme(); // eat equal sign
+            Lexeme name = advance_lexeme();
+            if (current_lxm_.token == FuncCall) {
+                return parse_function_call();
+            }
+
+            return std::make_unique<AssignmentASTNode>
+                (name.raw_val, parse_binary_op());
+        }
     }
     
-    if (current_lxm_.token == FuncDef) { // this is a function definition
+    else if (current_lxm_.token == FuncCall) {
+        return parse_function_call();
+    } 
+
+    else if (current_lxm_.token == FuncDef) { // this is a function definition
         advance_lexeme();  // eat fn keyword
         return parse_function_def();
     }
 
+    else {
+        throw std::runtime_error(
+                std::format("Unexpected symbol at line {}",
+                    lexer_.get_current_line()));
+    }
     return nullptr;
 }
 
@@ -102,8 +141,7 @@ std::unique_ptr<ASTNode> Parser::parse_primary() {
     return nullptr;
 }
 
-// this could be improved with 
-// a design pattern
+// TODO: this could be improved with a design pattern
 std::unique_ptr<ExpressionAST> Parser::parse_literal() { 
     if (current_lxm_.token == IntLiteral) {
         Lexeme ret = advance_lexeme(); // eat int literal
@@ -137,9 +175,7 @@ std::unique_ptr<StatementAST> Parser::parse_function_def() {
                     lexer_.get_current_line()));
     }
 
-    using Parameter = FunctionDefASTNode::Parameter;
-
-    std::vector<Parameter> parameters;
+    std::vector<FunctionDefASTNode::Parameter> parameters;
     Lexeme prev_lexm;
     if (current_lxm_.token != ParanClose) { // if parameter list is not empty
         //()
@@ -195,6 +231,32 @@ std::unique_ptr<StatementAST> Parser::parse_function_def() {
     Lexeme ret_type = advance_lexeme();
     
     //TODO:parse body
+    std::vector<std::unique_ptr<StatementAST>> func_body;
+    
+    return std::make_unique<FunctionDefASTNode>(func_name.raw_val, 
+            parameters, ret_type.token,
+            std::move(func_body));
+}
 
-    return nullptr;
+std::unique_ptr<ExpressionAST> Parser::parse_function_call() {
+    Lexeme func_name = advance_lexeme(); //eat func name
+    std::vector<std::unique_ptr<ExpressionAST>> args;
+
+    Lexeme prev_lxm = advance_lexeme(); // eat paran open
+    if (prev_lxm.token == ParanOpen && current_lxm_.token != ParanClose) {
+        // if parameter list is not empty
+        while(prev_lxm.token != ParanClose) {
+            // TODO: this doesn't support unary args
+            args.emplace_back(parse_binary_op());
+            prev_lxm = advance_lexeme();
+        }
+     
+        if (prev_lxm.token != ParanClose) { 
+            throw std::runtime_error(
+                    std::format("Expected ')' at line {}",
+                        lexer_.get_current_line()));
+        }
+    }
+    return std::make_unique<FuncCallASTNode>
+        (func_name.raw_val, std::move(args));
 }

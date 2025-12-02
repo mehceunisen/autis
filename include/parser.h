@@ -19,6 +19,7 @@ private:
     std::unique_ptr<ExpressionAST> parse_literal(); 
     std::unique_ptr<ExpressionAST> parse_type();
     std::unique_ptr<ExpressionAST> parse_binary_op();
+    std::unique_ptr<ExpressionAST> parse_function_call();
     std::unique_ptr<ExpressionAST> parse_binary_op_rhs(int exper_prec, std::unique_ptr<ExpressionAST> lhs);
 
     std::unique_ptr<StatementAST> parse_control();

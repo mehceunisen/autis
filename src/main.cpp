@@ -10,7 +10,7 @@ int main() {
     Lexer l("file.ats");
     Parser p(l);
     for (int i = 0; i < 10; ++i) {
-        auto res = unique_ptr_cast<FunctionDefASTNode>(p.parse());
+        auto res = unique_ptr_cast<FuncCallASTNode>(p.parse());
         std::cout << "of\n";
     }
     return 0;

@@ -57,11 +57,11 @@ private:
 
 class FuncCallASTNode : public ExpressionAST {
 public:
-    FuncCallASTNode(std::string _name, std::vector<ExpressionAST*> _arguments) 
-        : name(_name), arguments(_arguments) {}
+    FuncCallASTNode(std::string _name, std::vector<std::unique_ptr<ExpressionAST>> _arguments) 
+        : name(_name), arguments(std::move(_arguments)) {}
 private:
     std::string name;
-    std::vector<ExpressionAST*> arguments;
+    std::vector<std::unique_ptr<ExpressionAST>> arguments;
 };
 
 #endif

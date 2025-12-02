@@ -13,6 +13,7 @@ enum Token {
     CtrlWhile, // while()
     CtrlFor, // for()
     FuncDef, // fn
+    FuncCall, // {fn_name}()
     FuncRet, // ret
     ParanOpen, // (
     ParanClose, // )
