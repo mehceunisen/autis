@@ -132,6 +132,13 @@ Lexeme Lexer::get_lexeme() {
     return Lexeme(Undefined, "");
 }
 
+Lexeme Lexer::peek_next_lexeme() {
+    auto idx = last_idx_;
+    Lexeme ret = get_lexeme();
+    last_idx_ = idx;
+    return ret;
+}
+
 const uint32_t Lexer::get_current_line() const {
     return current_line_; 
 }

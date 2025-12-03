@@ -6,14 +6,22 @@
 #include "ast_node.h"
 #include "token.h"
 
+class ExpressionStatementASTNode : public StatementAST {
+public:
+    ExpressionStatementASTNode(std::unique_ptr<ExpressionAST> _expr) :
+        expr(std::move(_expr)) {}
+private:
+    std::unique_ptr<ExpressionAST> expr;
+};
+
 class VariableDeclarationASTNode : public StatementAST {
 public:
-    VariableDeclarationASTNode(std::string _name, 
+    VariableDeclarationASTNode(std::string _name, Token _token,
             std::unique_ptr<ExpressionAST> _init=nullptr) 
-        : name(std::move(_name)), init(std::move(_init)){}
+        : name(std::move(_name)), token(_token), init(std::move(_init)){}
 private:
     std::string name;
-    //Token token;  i don't know why i've added this, actually claude added
+    Token token;
     std::unique_ptr<ExpressionAST> init;
 };
 

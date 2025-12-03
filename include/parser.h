@@ -12,7 +12,7 @@ public:
     Parser(Lexer& lexer);
 
     std::unique_ptr<ASTNode> parse();
-
+    std::unique_ptr<ASTNode> my_parse();
 private:
     std::unique_ptr<ASTNode> parse_primary();
 
@@ -20,14 +20,17 @@ private:
     std::unique_ptr<ExpressionAST> parse_type();
     std::unique_ptr<ExpressionAST> parse_binary_op();
     std::unique_ptr<ExpressionAST> parse_function_call();
+    std::unique_ptr<ExpressionAST> parse_unary_expression();
     std::unique_ptr<ExpressionAST> parse_binary_op_rhs(int exper_prec, std::unique_ptr<ExpressionAST> lhs);
 
     std::unique_ptr<StatementAST> parse_control();
     std::unique_ptr<StatementAST> parse_function_def();
-
+    std::unique_ptr<StatementAST> parse_variable_declaration();
+    std::unique_ptr<StatementAST> parse_identifier_statement();
     Lexeme advance_lexeme();
 
     Lexeme current_lxm_;
+    Lexeme prev_lxm_;
 
     Lexer& lexer_;
 };

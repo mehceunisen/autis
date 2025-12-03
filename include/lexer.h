@@ -18,13 +18,13 @@ public:
     Lexer(std::string file_path);
      
     Lexeme get_lexeme();
+    Lexeme peek_next_lexeme();
 
     const uint32_t get_current_line() const;
 private:
     char advance();
     char peek();
     char peek_next();
-
     uint64_t last_idx_ {0};
     uint32_t current_line_{0};
 
