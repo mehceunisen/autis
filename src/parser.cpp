@@ -92,6 +92,7 @@ std::unique_ptr<StatementAST> Parser::parse_identifier_statement() {
                 lexer_.get_current_line())); 
 }
 
+// TODO: cannot parse parameter and args
 std::unique_ptr<ASTNode> Parser::my_parse() {
     if (type_set.contains(current_lxm_.token)) {
         return parse_variable_declaration();
@@ -213,6 +214,7 @@ std::unique_ptr<ASTNode> Parser::parse_primary() {
     else if (current_lxm_.token == Token::FuncCall) {
         return parse_function_call();
     }
+    
     return nullptr;
 }
 
@@ -251,34 +253,36 @@ std::unique_ptr<StatementAST> Parser::parse_function_def() {
     }
 
     std::vector<FunctionDefASTNode::Parameter> parameters;
-    if (current_lxm_.token != ParanClose) { // if parameter list is not empty
+    while (current_lxm_.token != ParanClose) { // if parameter list is not empty
         //()
         //(x:int32)
         //(x:int32, y:uint32)
-        do {
-            //id_name : var_type
-            Lexeme param_name = advance_lexeme();
-            if (param_name.token != Identifier) {
-                throw std::runtime_error(
-                        std::format("Expected identifier at line {}",
-                            lexer_.get_current_line()));
-            }
+        //id_name : var_type
+        Lexeme param_name = advance_lexeme();
+        if (param_name.token != Identifier) {
+            throw std::runtime_error(
+                    std::format("Expected identifier at line {}",
+                        lexer_.get_current_line()));
+        }
 
-            if (advance_lexeme().token != Colon) {
-                throw std::runtime_error(
-                        std::format("Expected colon at line {}",
-                            lexer_.get_current_line()));
-            }
-            
-            Lexeme param_type = advance_lexeme();
-            if (!type_set.contains(param_type.token)) {
-                throw std::runtime_error(
-                        std::format("Expected variable type at line {}",
-                            lexer_.get_current_line()));
-            }
-            parameters.emplace_back(param_type.token, param_name.raw_val);
-        } while(prev_lxm_.token == Comma && prev_lxm_.token != ParanClose);
+        if (advance_lexeme().token != Colon) {
+            throw std::runtime_error(
+                    std::format("Expected colon at line {}",
+                        lexer_.get_current_line()));
+        }
+
+        Lexeme param_type = advance_lexeme();
+        if (!type_set.contains(param_type.token)) {
+            throw std::runtime_error(
+                    std::format("Expected variable type at line {}",
+                        lexer_.get_current_line()));
+        }
+        parameters.emplace_back(param_type.token, param_name.raw_val);
         
+        if (current_lxm_.token == Token::Comma) { 
+        // if there are more then one parameters, expect comma (,)
+            advance_lexeme(); // eat comma (,)
+        }
     }
      
     if (current_lxm_.token != ParanClose) { 
@@ -316,16 +320,15 @@ std::unique_ptr<ExpressionAST> Parser::parse_function_call() {
     Lexeme func_name = advance_lexeme(); //eat func name
     std::vector<std::unique_ptr<ExpressionAST>> args;
 
-    Lexeme prev_lxm = advance_lexeme(); // eat paran open
-    if (prev_lxm.token == ParanOpen && current_lxm_.token != ParanClose) {
+    advance_lexeme(); // eat paran open
+    if (prev_lxm_.token == ParanOpen && current_lxm_.token != ParanClose) {
         // if parameter list is not empty
-        while(prev_lxm.token != ParanClose) {
-            // TODO: this doesn't support unary args
+        while(prev_lxm_.token != ParanClose) {
             args.emplace_back(parse_binary_op());
-            prev_lxm = advance_lexeme();
+            advance_lexeme(); // eat comma
         }
      
-        if (prev_lxm.token != ParanClose) { 
+        if (prev_lxm_.token != ParanClose) { 
             throw std::runtime_error(
                     std::format("Expected ')' at line {}",
                         lexer_.get_current_line()));
