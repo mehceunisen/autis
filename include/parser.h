@@ -11,8 +11,7 @@ class Parser {
 public:
     Parser(Lexer& lexer);
 
-    std::unique_ptr<ASTNode> parse();
-    std::unique_ptr<ASTNode> my_parse();
+    std::unique_ptr<StatementAST> parse();
 private:
     std::unique_ptr<ASTNode> parse_primary();
 

@@ -12,8 +12,7 @@ enum Token {
     CtrlElseIf, // elseif () {}
     CtrlWhile, // while()
     CtrlFor, // for()
-    FuncDef, // fn
-    FuncCall, // {fn_name}()
+    FuncKword, // {fn_name}()
     FuncRet, // ret
     ParanOpen, // (
     ParanClose, // )

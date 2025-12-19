@@ -37,7 +37,7 @@ static std::unordered_map<std::string, Lexeme> lexeme_lookup_table {
     {"elseif", Lexeme(CtrlElseIf, "elseif")},
     {"while", Lexeme(CtrlWhile, "while")},
     {"for", Lexeme(CtrlFor, "for")},
-    {"fn", Lexeme(FuncDef, "fn")},
+    {"fn", Lexeme(FuncKword, "fn")},
     {"return", Lexeme(FuncRet, "return")},
     {"i32", Lexeme(TypeInt32, "i32")},
     {"u32", Lexeme(TypeUInt32, "u32")},

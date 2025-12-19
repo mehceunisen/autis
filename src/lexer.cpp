@@ -50,10 +50,6 @@ Lexeme Lexer::get_lexeme() {
             word += advance();
         } while(std::isalnum(peek()) || peek() == '_');
         
-        if (peek() == '(') {
-            return Lexeme(FuncCall, word);
-        }
-
         if (lexeme_lookup_table.contains(word)) {
             return lexeme_lookup_table[word];
         }
