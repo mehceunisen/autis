@@ -249,6 +249,12 @@ std::unique_ptr<StatementAST> Parser::parse_function_def() {
           lexer_.get_current_line()));
   }
   advance_lexeme(); // eat {
+  if (advance_lexeme().token != Token::EndOfLine) { // eat \n
+    throw std::runtime_error(
+        std::format("Expected new line at line {}",
+          lexer_.get_current_line()));
+  }
+
   while (current_lxm_.token != Token::CurBraceClose) {
     func_body.emplace_back(parse());
     if (current_lxm_.token == Token::EndOfLine) {
