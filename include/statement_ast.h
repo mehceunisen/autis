@@ -25,15 +25,6 @@ private:
     std::unique_ptr<ExpressionAST> init;
 };
 
-class AssignmentASTNode : public StatementAST {
-public:
-    AssignmentASTNode(std::string _name, std::unique_ptr<ExpressionAST> _value) 
-        : name(std::move(_name)), value(std::move(_value)) {}
-private:
-    std::string name;
-    std::unique_ptr<ExpressionAST> value;
-};
-
 class IfStatementASTNode : public StatementAST {
 public:
     IfStatementASTNode(std::unique_ptr<ExpressionAST> _cond, 
@@ -75,10 +66,10 @@ private:
 
 class ReturnStatementASTNode : public StatementAST {
 public:
-    ReturnStatementASTNode(std::unique_ptr<ExpressionAST> val = nullptr)
+    ReturnStatementASTNode(std::unique_ptr<StatementAST> val)
         : returnValue(std::move(val)) {}
 private:
-    std::unique_ptr<ExpressionAST> returnValue;  // optional (for void returns)
+    std::unique_ptr<StatementAST> returnValue;  // optional (for void returns)
 
 };
 
