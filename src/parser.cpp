@@ -6,6 +6,7 @@
 #include "token.h"
 #include "ast_util.h"
 
+#include <algorithm>
 #include <iostream>
 #include <iterator>
 #include <stdexcept>
@@ -30,7 +31,11 @@ Lexeme Parser::advance_lexeme() {
 }
 
 std::unique_ptr<StatementAST> Parser::parse() {
-  if (type_set.contains(current_lxm_.token)) {
+  if (literal_set.contains(current_lxm_.token)) {
+    return std::make_unique<ExpressionStatementASTNode>
+      (parse_literal()); // function will eat token
+  }
+  else if (type_set.contains(current_lxm_.token)) {
     return parse_variable_declaration();
   }
   else if (current_lxm_.token == Token::Identifier) {
@@ -38,12 +43,17 @@ std::unique_ptr<StatementAST> Parser::parse() {
       return std::make_unique<ExpressionStatementASTNode>
         (parse_function_call());
     }
-    return parse_identifier_statement();
+    return std::make_unique<ExpressionStatementASTNode>
+      (parse_identifier());
   }
   else if (current_lxm_.token == Token::FuncKword) {
     if (lexer_.peek_next_lexeme().token == Identifier) {
       return parse_function_def();
     }
+  }
+  else if(current_lxm_.token == Token::FuncRet) {
+    advance_lexeme(); // eat return keyword
+    return std::make_unique<ReturnStatementASTNode>(parse());
   }
   return nullptr;
 }
@@ -53,7 +63,7 @@ std::unique_ptr<StatementAST> Parser::parse_variable_declaration() {
 
   if (current_lxm_.token != Token::Identifier)
     throw std::runtime_error(
-        std::format("expected identifier at line {}", 
+        std::format("expected identifier at line {}",
           lexer_.get_current_line())); 
   Lexeme identifier = advance_lexeme();
 
@@ -83,11 +93,10 @@ std::unique_ptr<ExpressionAST> Parser::parse_unary_expression() {
 
 }
 
-std::unique_ptr<StatementAST> Parser::parse_identifier_statement() {
+std::unique_ptr<ExpressionAST> Parser::parse_identifier() {
   Lexeme next_lxm = lexer_.peek_next_lexeme();
   if (next_lxm.token == OpInc || next_lxm.token == OpDec) {
-    return std::make_unique<ExpressionStatementASTNode>(
-        parse_unary_expression());
+    return parse_unary_expression();
   }
 
   else if (next_lxm.token == Token::OpAssign) {
@@ -95,13 +104,13 @@ std::unique_ptr<StatementAST> Parser::parse_identifier_statement() {
     Lexeme name = advance_lexeme();
 
     return std::make_unique<AssignmentASTNode>
-      (name.raw_val, parse_binary_op());
+        (name.raw_val, parse_binary_op());
   }
 
   else if (operator_set.contains(next_lxm.token) || 
       next_lxm.token == EndOfLine) {
     Lexeme identifier = advance_lexeme(); // eat identifier
-    return std::make_unique<ExpressionStatementASTNode>(std::make_unique<IdentifierASTNode>(identifier.raw_val));
+    return std::make_unique<IdentifierASTNode>(identifier.raw_val);
   }
 
   throw std::runtime_error(
@@ -110,7 +119,7 @@ std::unique_ptr<StatementAST> Parser::parse_identifier_statement() {
 }
 
 std::unique_ptr<ExpressionAST> Parser::parse_binary_op() {
-  std::unique_ptr<ExpressionAST> lhs = unique_ptr_cast<ExpressionAST>(parse_primary()); 
+  std::unique_ptr<ExpressionAST> lhs = parse_primary(); 
   return parse_binary_op_rhs(0, std::move(lhs));
 
 }
@@ -128,7 +137,7 @@ std::unique_ptr<ExpressionAST> Parser::parse_binary_op_rhs(int exper_prec, std::
     }
 
     Lexeme op = advance_lexeme(); // eat current op
-    std::unique_ptr<ExpressionAST> rhs = unique_ptr_cast<ExpressionAST>(parse_primary());
+    std::unique_ptr<ExpressionAST> rhs = parse_primary();
     if (next_prec > exper_prec) {
       rhs = parse_binary_op_rhs(binop_precedence[op.token] + 1, std::move(rhs));
     }
@@ -136,13 +145,13 @@ std::unique_ptr<ExpressionAST> Parser::parse_binary_op_rhs(int exper_prec, std::
   } 
 }
 
-std::unique_ptr<ASTNode> Parser::parse_primary() {
+std::unique_ptr<ExpressionAST> Parser::parse_primary() {
   if (literal_set.contains(current_lxm_.token)) {
     return parse_literal(); // function will eat token
   }
   else if (current_lxm_.token == Token::Identifier) {
     // eat token
-    return parse_identifier_statement();
+    return parse_identifier();
   }
   else if (current_lxm_.token == Token::FuncKword) {
     return parse_function_call();

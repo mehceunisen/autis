@@ -64,4 +64,14 @@ private:
     std::vector<std::unique_ptr<ExpressionAST>> arguments;
 };
 
+
+class AssignmentASTNode : public ExpressionAST {
+public:
+    AssignmentASTNode(std::string _name, std::unique_ptr<ExpressionAST> _value) 
+        : name(std::move(_name)), value(std::move(_value)) {}
+private:
+    std::string name;
+    std::unique_ptr<ExpressionAST> value;
+};
+
 #endif
