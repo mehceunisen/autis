@@ -58,7 +58,7 @@ std::unique_ptr<StatementAST> Parser::parse() {
     advance_lexeme();
     return parse();
   }
-  
+
   return nullptr;
 }
 

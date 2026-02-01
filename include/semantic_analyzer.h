@@ -1,42 +1,52 @@
 #ifndef SEMANTIC_ANALYZER_H
 #define SEMANTIC_ANALYZER_H
 
+#include "expression_ast.h"
+#include "statement_ast.h"
 #include "token.h"
-#include "ast_node.h"
-
 #include <unordered_map>
 #include <memory>
 #include <string>
 #include <vector>
 
-struct SymbolInfo {
-  std::string name;
-  Token token;
-};
+class StatementAST;
+class ExpressionAST;
 
 struct Scope {
-  std::shared_ptr<Scope> parent;
+  std::shared_ptr<Scope> parent {nullptr};
   std::unordered_map<std::string, SymbolInfo> symbols;
 };
 
 class SemanticAnalyzer {
 public:
+  SemanticAnalyzer();
+  ~SemanticAnalyzer() = default;
   // vector of errors containing error string and line
   std::vector<std::pair<std::string, std::size_t>> analyze(std::vector<std::unique_ptr<StatementAST>> program);
-  
-  // run type check on node current node
-  std::pair<std::string, std::size_t> check_type();
-
-  std::pair<std::string, std::size_t> check_variable_declaration();
-  std::pair<std::string, std::size_t> check_assignment();
-  std::pair<std::string, std::size_t> check_binary_op();
-  std::pair<std::string, std::size_t> check_return_type();
-
   // lookup for the symbol in current and parent scopes
   std::pair<std::string, std::size_t> check_scope();
 
+  // Expression visitors
+  virtual std::optional<std::string> visit(IntASTNode& node);
+  virtual std::optional<std::string> visit(FloatASTNode& node);
+  virtual std::optional<std::string> visit(StringASTNode& node);
+  virtual std::optional<std::string> visit(IdentifierASTNode& node);
+  virtual std::optional<std::string> visit(BinaryOpASTNode& node);
+  virtual std::optional<std::string> visit(UnaryOpASTNode& node);
+  virtual std::optional<std::string> visit(FuncCallASTNode& node);
+
+  // statement visitors
+  virtual std::optional<std::string> visit(ExpressionStatementASTNode& node);
+  virtual std::optional<std::string> visit(VariableDeclarationASTNode& node);
+  virtual std::optional<std::string> visit(AssignmentASTNode& node);
+  virtual std::optional<std::string> visit(IfStatementASTNode& node);
+  virtual std::optional<std::string> visit(WhileStatementASTNode& node);
+  virtual std::optional<std::string> visit(ForStatementASTNode& node);
+  virtual std::optional<std::string> visit(ReturnStatementASTNode& node);
+  virtual std::optional<std::string> visit(FunctionDefASTNode& node);
 private:
   // keep track of what scope I'm currently in
+  std::shared_ptr<Scope> main_scope_;
   std::shared_ptr<Scope> current_scope_;
 };
 
