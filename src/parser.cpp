@@ -38,13 +38,27 @@ std::unique_ptr<StatementAST> Parser::parse() {
       return std::make_unique<ExpressionStatementASTNode>
         (parse_function_call());
     }
-    return parse_identifier_statement();
+    else if (lexer_.peek_next_lexeme().token == Token::OpAssign) {
+      Lexeme name = advance_lexeme();
+      advance_lexeme(); // eat name
+      return std::make_unique<AssignmentASTNode>
+        (name.raw_val, parse_binary_op());
+    }
+    return std::make_unique<ExpressionStatementASTNode>(parse_identifier_expression());
   }
   else if (current_lxm_.token == Token::FuncKword) {
     if (lexer_.peek_next_lexeme().token == Identifier) {
       return parse_function_def();
     }
   }
+  else if (current_lxm_.token == Token::FuncRet) {
+    return parse_return_statement();
+  }
+  else if (current_lxm_.token == EndOfLine) {
+    advance_lexeme();
+    return parse();
+  }
+  
   return nullptr;
 }
 
@@ -83,25 +97,17 @@ std::unique_ptr<ExpressionAST> Parser::parse_unary_expression() {
 
 }
 
-std::unique_ptr<StatementAST> Parser::parse_identifier_statement() {
+std::unique_ptr<ExpressionAST> Parser::parse_identifier_expression() {
   Lexeme next_lxm = lexer_.peek_next_lexeme();
   if (next_lxm.token == OpInc || next_lxm.token == OpDec) {
-    return std::make_unique<ExpressionStatementASTNode>(
-        parse_unary_expression());
+    return parse_unary_expression();
   }
 
-  else if (next_lxm.token == Token::OpAssign) {
-    advance_lexeme(); // eat equal sign
-    Lexeme name = advance_lexeme();
-
-    return std::make_unique<AssignmentASTNode>
-      (name.raw_val, parse_binary_op());
-  }
 
   else if (operator_set.contains(next_lxm.token) || 
       next_lxm.token == EndOfLine) {
     Lexeme identifier = advance_lexeme(); // eat identifier
-    return std::make_unique<ExpressionStatementASTNode>(std::make_unique<IdentifierASTNode>(identifier.raw_val));
+    return std::make_unique<IdentifierASTNode>(identifier.raw_val);
   }
 
   throw std::runtime_error(
@@ -128,7 +134,7 @@ std::unique_ptr<ExpressionAST> Parser::parse_binary_op_rhs(int exper_prec, std::
     }
 
     Lexeme op = advance_lexeme(); // eat current op
-    std::unique_ptr<ExpressionAST> rhs = unique_ptr_cast<ExpressionAST>(parse_primary());
+    std::unique_ptr<ExpressionAST> rhs = parse_primary();
     if (next_prec > exper_prec) {
       rhs = parse_binary_op_rhs(binop_precedence[op.token] + 1, std::move(rhs));
     }
@@ -136,13 +142,13 @@ std::unique_ptr<ExpressionAST> Parser::parse_binary_op_rhs(int exper_prec, std::
   } 
 }
 
-std::unique_ptr<ASTNode> Parser::parse_primary() {
+std::unique_ptr<ExpressionAST> Parser::parse_primary() {
   if (literal_set.contains(current_lxm_.token)) {
     return parse_literal(); // function will eat token
   }
   else if (current_lxm_.token == Token::Identifier) {
     // eat token
-    return parse_identifier_statement();
+    return parse_identifier_expression();
   }
   else if (current_lxm_.token == Token::FuncKword) {
     return parse_function_call();
@@ -255,12 +261,19 @@ std::unique_ptr<StatementAST> Parser::parse_function_def() {
           lexer_.get_current_line()));
   }
 
-  while (current_lxm_.token != Token::CurBraceClose) {
+  while (current_lxm_.token != Token::CurBraceClose && current_lxm_.token != EndOfFile) {
     func_body.emplace_back(parse());
     if (current_lxm_.token == Token::EndOfLine) {
       advance_lexeme(); // eat
     }
   }
+
+  if (current_lxm_.token == EndOfFile) {
+    throw std::runtime_error(
+        std::format("Expected CurlyBraceClose at line {}",
+          lexer_.get_current_line()));
+  }
+  advance_lexeme(); // eat }
 
   return std::make_unique<FunctionDefASTNode>(func_name.raw_val, 
       std::move(parameters), ret_type.token,
@@ -294,3 +307,11 @@ std::unique_ptr<ExpressionAST> Parser::parse_function_call() {
   return std::make_unique<FuncCallASTNode>
     (func_name.raw_val, std::move(args));
 }
+
+std::unique_ptr<StatementAST> Parser::parse_return_statement() {
+  advance_lexeme(); // eat "return"
+  auto ret = parse_primary();
+  advance_lexeme(); // eat retval
+  return std::make_unique<ExpressionStatementASTNode>(std::move(ret));
+}
+

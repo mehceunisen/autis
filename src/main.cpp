@@ -10,9 +10,9 @@
 int main() {
     Lexer l("file.ats");
     Parser p(l);
-    for (int i = 0; i < 10; ++i) {
-        auto res = unique_ptr_cast<FunctionDefASTNode>(p.parse());
-        std::cout << "of\n";
+    std::vector<std::unique_ptr<StatementAST>> res;
+    while(auto r = p.parse()) {
+      res.emplace_back(std::move(r));
     }
     return 0;
 }
