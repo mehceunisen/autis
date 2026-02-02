@@ -3,7 +3,10 @@
 
 #include "expression_ast.h"
 #include "statement_ast.h"
-#include "token.h"
+#include "symbol_info.h"
+#include "semantic_info.h"
+#include "symbol.h"
+
 #include <unordered_map>
 #include <memory>
 #include <string>
@@ -45,9 +48,15 @@ public:
   virtual std::optional<std::string> visit(ReturnStatementASTNode& node);
   virtual std::optional<std::string> visit(FunctionDefASTNode& node);
 private:
+  bool is_compatible(const Token& t1, const Token& t2);
+  Token infer_result_type(const Token operand, const Token& lhs, const Token& rhs);
   // keep track of what scope I'm currently in
   std::shared_ptr<Scope> main_scope_;
   std::shared_ptr<Scope> current_scope_;
+  
+  std::unordered_map<ASTNode*, Symbol*> declarations_;
+
+  SemanticInfo semantic_info_;
 };
 
 
