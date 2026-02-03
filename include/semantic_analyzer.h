@@ -5,7 +5,6 @@
 #include "statement_ast.h"
 #include "symbol_info.h"
 #include "semantic_info.h"
-#include "symbol.h"
 
 #include <unordered_map>
 #include <memory>
@@ -54,7 +53,7 @@ private:
   std::shared_ptr<Scope> main_scope_;
   std::shared_ptr<Scope> current_scope_;
   
-  std::unordered_map<ASTNode*, Symbol*> declarations_;
+  std::unordered_map<SymbolInfo*, ASTNode*> declarations_;
 
   SemanticInfo semantic_info_;
 };
